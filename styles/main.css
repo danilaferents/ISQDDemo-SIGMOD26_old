@@ -1,0 +1,452 @@
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  position: relative;
+  z-index: 0;
+  background: #d5d5d5;
+
+  /* dynamic inset so split panes never start under control panel */
+  --hudTopInset: 10px;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: rgba(0,0,0,0.06);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: url("../assets/neslogo.png");
+  background-repeat: repeat;
+  background-size: 90px 90px;
+  opacity: 0.08;
+}
+
+#container {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+}
+
+/* HUD panels */
+#setupHUD {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 30;          /* ALWAYS above */
+  pointer-events: none;
+}
+
+/* Topology HUD (default bottom-right) */
+#topologyHUD{
+  position:absolute;
+  right:10px;
+  bottom:10px;
+  z-index:10;
+  pointer-events:none;
+}
+
+/* Snapshots HUD: LEFT, grows UP and RIGHT */
+#snapshotsHUD{
+  position:absolute;
+  left:10px;
+  bottom:10px;
+  z-index:10;
+  pointer-events:none;
+}
+
+.panel {
+  pointer-events: auto;
+  width: 450px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.panelHeader {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom: 8px;
+}
+
+.panelTitle { font-weight: 800; font-size: 12px; letter-spacing: 0.2px; }
+.hr { height: 1px; background: rgba(0,0,0,0.12); margin: 10px 0; }
+.small { font-size: 11px; opacity: 0.8; }
+
+/* Topology box */
+#topologyBox{
+  height:400px;
+  border-radius:8px;
+  border:1px dashed rgba(0,0,0,0.25);
+  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.00));
+  overflow:hidden;
+}
+#topologyPanel{
+  width: 600px;
+}
+
+/* snapshots panel sizing */
+#snapshotsPanel{
+  width: 800px;
+}
+#snapshotsBox{
+  max-height: calc(100vh - 220px);
+  overflow:auto;
+  padding-right: 6px;
+}
+
+.shotImgsRow{
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* each graph fills half */
+.shotImgsRow .shotImg{
+  flex: 1 1 50%;
+  width: 50%;
+  max-width: 50%;
+  border-radius: 8px;
+  background: white;
+}
+
+/* One snapshot row holding 2 tiles */
+.shotRow{
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+/* Each graph becomes its own white tile */
+.shotTile{
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+}
+
+/* Image inside tile */
+.shotTile .shotImg{
+  width: 100%;
+  display: block;
+  border-radius: 10px;
+  border: 1px dashed rgba(0,0,0,0.20);
+  background: white;
+}
+
+/* Tile header */
+.shotTileTitle{
+  font-weight: 900;
+  font-size: 12px;
+  margin-bottom: 6px;
+  padding-right: 30px; /* space for X */
+}
+
+/* Per-tile delete X */
+.shotTileDel{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  line-height: 1;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.14);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.10);
+  cursor: pointer;
+}
+.shotTileDel:hover{
+  background: rgba(255,255,255,0.98);
+  border-color: rgba(0,0,0,0.22);
+  transform: translateY(-1px);
+}
+
+/* stack on narrow widths */
+@media (max-width: 760px){
+  .shotRow{ flex-direction: column; }
+}
+
+/* Optional: stack on small screens */
+@media (max-width: 560px){
+  .shotImgsRow{ flex-direction: column; }
+}
+
+/* Graph box (inside Snapshots panel bottom) */
+#graphBox {
+  height: 250px;
+  border-radius: 8px;
+  border: 1px dashed rgba(0,0,0,0.25);
+  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.00));
+  overflow: hidden;
+}
+
+/* Deployment latency graph box */
+#deployGraphBox{
+  height: 250px;
+  border-radius: 8px;
+  border: 1px dashed rgba(0,0,0,0.25);
+  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.00));
+  overflow: hidden;
+}
+
+/* NEW: live graphs wrapper (hidden when stopped) */
+#liveGraphsSection.hidden { display:none; }
+
+/* Form rows */
+.fieldRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+}
+.fieldRow label { font-size: 12px; }
+select {
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: white;
+  min-width: 150px;
+}
+
+button {
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: white;
+  cursor: pointer;
+}
+button:hover { background: rgba(255,255,255,0.92); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Scenario buttons */
+.tabsCol{
+  pointer-events:auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top: 2px;
+}
+.scenarioBtn{
+  font-size:12px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,0.18);
+  background: rgba(255,255,255,0.55);
+  cursor:pointer;
+  text-align:center;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+.scenarioBtn:hover{ transform: translateY(-1px); }
+.scenarioBtn.active{
+  background: rgba(255,255,255,0.78);
+  border-color: rgba(0,0,0,0.28);
+  box-shadow:
+    0 12px 26px rgba(0,0,0,0.12),
+    inset 0 0 0 2px rgba(255,255,255,0.55);
+}
+.scenarioBtn .dot{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  margin-right:8px;
+  vertical-align:middle;
+  background: rgba(0,0,0,0.18);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+}
+.scenarioBtn.active .dot{
+  background: rgba(36,60,255,0.85);
+}
+
+/* Control panel hide/show */
+#setupHUD.hidden { display:none; }
+#showControlBtn{
+  position:absolute;
+  top:10px;
+  left:10px;
+  z-index: 31;
+  pointer-events:auto;
+  display:none;
+}
+#showControlBtn.visible{ display:block; }
+
+/* Config collapse button style */
+.pillBtn{
+  width:100%;
+  text-align:center;
+  font-weight: 900;
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.75);
+}
+.pillBtn.active{
+  background: white;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+  border-color: rgba(0,0,0,0.28);
+}
+
+/* Snapshots cards + delete X */
+.shot{
+  position: relative;
+  border:1px solid rgba(0,0,0,0.10);
+  border-radius:10px;
+  background: rgba(255,255,255,0.7);
+  padding:8px;
+  margin-top:10px;
+}
+.shotTitle{
+  font-weight:800;
+  font-size:12px;
+  margin-bottom:6px;
+  line-height:1.2;
+  padding-right: 26px;
+}
+.shotMeta{
+  font-size:11px;
+  opacity:0.8;
+  margin-bottom:8px;
+}
+.shotImg{
+  width:100%;
+  border-radius:8px;
+  border:1px dashed rgba(0,0,0,0.20);
+  display:block;
+}
+.shotDel{
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:22px;
+  height:22px;
+  border-radius:8px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  line-height:1;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(0,0,0,0.14);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.10);
+  cursor:pointer;
+}
+.shotDel:hover{
+  background: rgba(255,255,255,0.98);
+  border-color: rgba(0,0,0,0.22);
+  transform: translateY(-1px);
+}
+
+/* Bottom-left Train UI (unchanged) */
+#ui {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 8px;
+  font-size: 12px;
+  z-index: 10;
+  line-height: 1.35;
+  min-width: 320px;
+}
+#ui .uiBody { margin-top: 8px; }
+#ui.collapsed .uiBody { display: none; }
+.row { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+.label { display: inline-block; width: 92px; }
+.val { display: inline-block; width: 60px; text-align: right; }
+input[type="range"] { width: 180px; }
+
+/* ---------------------------------------------------
+   SPLIT LAYOUT (when map is OFF)
+--------------------------------------------------- */
+body.splitMode #topologyHUD,
+body.splitMode #snapshotsHUD{
+  position: fixed;
+  top: var(--hudTopInset);
+  bottom: 10px;
+  z-index: 9;
+}
+
+body.splitMode #snapshotsHUD{
+  left: 10px;
+  right: auto;
+  width: calc(50vw - 15px);
+}
+
+body.splitMode #topologyHUD{
+  right: 10px;
+  left: auto;
+  width: calc(50vw - 15px);
+  bottom: 10px;
+}
+
+body.splitMode #snapshotsPanel,
+body.splitMode #topologyPanel{
+  width: 100%;
+  height: calc(100vh - 20px);
+  display: flex;
+  flex-direction: column;
+}
+
+body.splitMode #topologyBox{
+  height: auto;
+  flex: 1;
+}
+
+body.splitMode #snapshotsBox{
+  max-height: none;
+  flex: 1;
+  overflow: auto;
+}
+
+body.splitMode #graphBox{
+  height: 320px;
+}
+
+body.splitMode #deployGraphBox{
+  height: 280px;
+}
+
+/* ---------------------------------------------------
+   NO OVERLAP (map ON + topo+shots ON)
+--------------------------------------------------- */
+body.noOverlapHUD #topologyHUD{
+  top: 10px;
+  bottom: auto;
+  right: 10px;
+}
+body.noOverlapHUD #snapshotsHUD{
+  left: 10px;
+  bottom: 10px;
+}
